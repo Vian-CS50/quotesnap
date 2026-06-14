@@ -1701,9 +1701,12 @@ PLAN_PRICING = {
 @limiter.limit(RATE_LIMITS["stripe_config"])
 def stripe_config(request: Request):
     """Return Stripe publishable key for frontend."""
+    is_live = bool(
+        STRIPE_PUBLISHABLE_KEY and STRIPE_PUBLISHABLE_KEY.startswith("pk_live_")
+    )
     return {
         "publishableKey": STRIPE_PUBLISHABLE_KEY if STRIPE_PUBLISHABLE_KEY and STRIPE_PUBLISHABLE_KEY.startswith("pk_") else None,
-        "testMode": True,
+        "testMode": not is_live,
     }
 
 
