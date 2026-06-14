@@ -1,0 +1,99 @@
+# Age Workaround — ABN & Stripe Setup (Do Tonight)
+
+You are 16. In Australia you CAN:
+- Hold an ABN as a sole trader with guardian consent/co-signing (no statutory minimum age)
+- Be the technical operator while a parent is the legal owner on paper for Stripe
+- Sign commercial contracts with guardian involvement
+
+You CAN:
+- Build and sell software through a parent's legal entity
+- Be the technical operator while a parent is the legal owner on paper
+- Receive money transferred from a parent's account
+
+This is completely legal, normal, and how many under-18 founders operate.
+
+CORRECTION: The previous version of this file incorrectly stated you cannot hold an ABN under 18. You CAN apply for an ABN at any age — under 18 requires a parent/guardian to co-sign or be present during the application at abr.gov.au.
+
+---
+
+## Step 1: Parent Applies for ABN
+
+1. Go to https://abr.gov.au
+2. Click "Apply for an ABN"
+3. Select "Sole trader"
+4. Business name: "QuoteSnap Software Services" (or just use their name)
+5. Business activity: "Software publishing" or "Computer system design"
+6. Takes 15 minutes. ABN issued immediately.
+
+---
+
+## Step 2: Parent Opens Stripe Account
+
+1. Go to https://stripe.com/au
+2. Sign up with parent's details (must match ABN holder)
+3. Connect parent's bank account for payouts
+4. Set business name to "QuoteSnap Software Services"
+5. Use the ABN from Step 1
+6. In Stripe settings, set default currency to AUD
+
+---
+
+## Step 3: Update Your Code
+
+1. In `.env` file, add parent's Stripe secret key:
+   STRIPE_SECRET_KEY=sk_live_...
+   STRIPE_PUBLISHABLE_KEY=pk_live_...
+
+2. In Stripe dashboard, create one product:
+   - Name: "QuoteSnap Pro Monthly"
+   - Price: $29 AUD / month
+   - No free trial (you handle trial manually via messaging)
+
+3. The checkout API in main.py already calls `/api/create-checkout-session`.
+   Ensure it creates a subscription, not a one-time payment.
+
+---
+
+## Step 4: Terms of Service
+
+Add a simple Terms of Service page to your website. It should say:
+
+"By subscribing to QuoteSnap, you agree to pay $29 AUD per month (or $19 AUD per month for founder pricing). You may cancel anytime. All payments are processed securely by Stripe. QuoteSnap Software Services is not liable for inaccuracies in AI-generated quotes. Always review quotes before sending to clients."
+
+This is standard SaaS click-to-accept. No signatures. No negotiation. No age check.
+
+---
+
+## Step 5: Money Flow
+
+1. Customer pays through Stripe → lands in parent's bank account
+2. Parent transfers money to you (or you use their card for API credits)
+3. Keep a simple spreadsheet of revenue vs costs (Moonshot API, Stripe fees)
+4. At tax time, parent declares the income on their tax return
+   - Deduct API costs, hosting, domain as business expenses
+   - If you pay yourself, that is a contractor payment (also deductible)
+
+---
+
+## What to Tell Customers
+
+Nothing. Customers do not care who holds the ABN. They care that the product works and their credit card payment is secure.
+
+On your website, you are "The QuoteSnap Team." No photos of you. No age mentioned. No founder story.
+
+---
+
+## What NOT To Do
+
+- Do NOT lie about your age to Stripe. They will verify identity and ban the account.
+- Do NOT use a friend's or relative's ABN without their explicit knowledge and consent.
+- Do NOT skip the Terms of Service. It protects you from disputes.
+
+---
+
+## Timeline
+
+- Tonight: ABN application (15 min)
+- Tomorrow: Stripe setup (30 min)
+- This week: Add Terms of Service page to website (1 hour)
+- Done. You are now legally able to accept payments.

@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-multipart
+jinja2
+httpx
+python-dotenv
+pydantic
+stripe
+slowapi
+email-validator
+bcrypt
+python-jose[cryptography]
+passlib
+pyotp
+sqlalchemy
+aiosqlite

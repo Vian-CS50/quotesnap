@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --background: #FDFCFA;
+  --foreground: #1C1917;
+  --surface: #F5F4F0;
+  --surface-border: #D6D3D1;
+  --primary: #C2410C;
+  --primary-hover: #9A3412;
+  --accent: #C2410C;
+  --accent-hover: #9A3412;
+  --muted: #78716C;
+  --danger: #B91C1C;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Purposeful motion: staggered reveal on page load */
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal {
+  animation: reveal-up 0.5s ease-out forwards;
+}
+.reveal-d1 { animation-delay: 0.08s; opacity: 0; }
+.reveal-d2 { animation-delay: 0.16s; opacity: 0; }
+.reveal-d3 { animation-delay: 0.24s; opacity: 0; }
+.reveal-d4 { animation-delay: 0.32s; opacity: 0; }
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-d1, .reveal-d2, .reveal-d3, .reveal-d4 {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

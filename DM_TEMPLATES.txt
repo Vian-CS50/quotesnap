@@ -1,0 +1,55 @@
+# QuoteSnap — Copy-Paste Message Templates
+
+---
+
+## Instagram DM (Cold Outreach)
+
+Hey [name], saw your work around Adelaide. Built a quote tool for local tradies — 30 sec voice memo to professional PDF. Giving the first 10 Adelaide landscapers founder pricing at $19/mo. Worth a look?
+
+[your link]
+
+---
+
+## Facebook Group Reply
+
+(Use when someone asks "What do you use for quotes?" or "How do I price this job?")
+
+I used to write them at 10pm after the kids went to bed. Built a tool that does it from a voice memo now. If you're Adelaide-based I can show you — just DM me.
+
+---
+
+## 24-Hour Follow-Up (Trial Users)
+
+Hey [name], saw you signed up for QuoteSnap yesterday. Did you get a chance to try it? What job did you quote?
+
+If you haven't tried it yet, happy to generate your first quote for you — just send me a voice memo describing the job and I'll run it through.
+
+---
+
+## Week 4 — The Ask
+
+Hey [name], your free week on QuoteSnap is up. If it saved you time on quotes, founder pricing is $19/month (then $29 for everyone after the first 10).
+
+Takes 2 minutes to subscribe: [Stripe link]
+
+---
+
+## Week 4 — The "No" Follow-Up
+
+No worries at all [name]. Quick question — what would QuoteSnap need to do for you to happily pay $19 a month?
+
+Your answer shapes what I build next.
+
+---
+
+## Testimonial Trade
+
+Hey [name], stoked you're finding QuoteSnap useful. Would you be open to recording a quick 20-second video saying how it's helped you? Happy to give you a free month in return.
+
+No pressure if not — just thought it'd be good to get a real tradie's voice out there instead of mine.
+
+---
+
+## Share With a Mate (In-App Button)
+
+This app wrote my quote in 30 seconds. Built for Adelaide tradies. quotesnap.com.au

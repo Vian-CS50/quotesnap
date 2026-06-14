@@ -1,0 +1,347 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2, Wand2 } from "lucide-react";
+import VoiceInput from "@/components/demo/VoiceInput";
+import JobForm from "@/components/demo/JobForm";
+import QuoteDisplay from "@/components/demo/QuoteDisplay";
+import QuoteHistory from "@/components/demo/QuoteHistory";
+import Paywall from "@/components/demo/Paywall";
+import ProgressIndicator from "@/components/ProgressIndicator";
+import MaterialCalculator from "@/components/MaterialCalculator";
+import {
+  API_URL,
+  FREE_QUOTA,
+  USAGE_KEY,
+  HISTORY_KEY,
+  DEFAULT_JOB_DETAILS,
+  type JobDetails,
+  type QuoteData,
+  type QuoteHistoryItem,
+} from "@/components/demo/types";
+
+function loadHistory(): QuoteHistoryItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(items: QuoteHistoryItem[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+}
+
+export default function InteractiveDemo() {
+  const [transcript, setTranscript] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [quote, setQuote] = useState<QuoteData | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [history, setHistory] = useState<QuoteHistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [usageCount, setUsageCount] = useState(0);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [jobDetails, setJobDetails] = useState<JobDetails>(DEFAULT_JOB_DETAILS);
+
+  useEffect(() => {
+    setHistory(loadHistory());
+    const raw = localStorage.getItem(USAGE_KEY);
+    setUsageCount(raw ? parseInt(raw, 10) || 0 : 0);
+  }, []);
+
+  const generateQuote = useCallback(async () => {
+    const cleanTranscript = transcript.trim();
+    if (!cleanTranscript || cleanTranscript.length < 10) {
+      setError("Please describe the job first. Tap the mic and talk for 30 seconds.");
+      return;
+    }
+
+    if (usageCount >= FREE_QUOTA) {
+      setShowPaywall(true);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setQuote(null);
+
+    try {
+      const display = (val: string, other: string) =>
+        val === "Other" && other ? `Other — ${other}` : val;
+
+      const payload = {
+        transcript: cleanTranscript,
+        job_details: {
+          job_type: display(jobDetails.job_type, jobDetails.job_type_other),
+          dimensions: jobDetails.dimensions,
+          client_name: jobDetails.client_name,
+          site_address: jobDetails.site_address,
+          abn: jobDetails.abn,
+          materials: display(jobDetails.materials, jobDetails.materials_other),
+          site_condition: display(jobDetails.site_condition, jobDetails.site_condition_other),
+          equipment_access: display(jobDetails.equipment_access, jobDetails.equipment_access_other),
+          access_notes: display(jobDetails.access_notes, jobDetails.access_notes_other),
+          services_to_avoid: display(jobDetails.services_to_avoid, jobDetails.services_to_avoid_other),
+          slope: jobDetails.slope,
+          council_da: jobDetails.council_da,
+          budget_range: display(jobDetails.budget_range, jobDetails.budget_range_other),
+          timeline: display(jobDetails.timeline, jobDetails.timeline_other),
+        },
+      };
+
+      const res = await fetch(`${API_URL}/api/generate-quote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      const data: QuoteData = await res.json();
+
+      setQuote(data);
+
+      const newItem: QuoteHistoryItem = {
+        id: Date.now().toString(),
+        quote_number: data.quote_data.quote_number,
+        client_name: data.quote_data.client_name || "TBA",
+        date: data.quote_data.date,
+        total: data.quote_data.total,
+        quote_html: data.quote_html,
+        quote_data: data.quote_data,
+        transcript: data.transcript,
+        follow_up: false,
+        won: false,
+        lost: false,
+      };
+      const updated = [newItem, ...history];
+      setHistory(updated);
+      saveHistory(updated);
+
+      const newCount = usageCount + 1;
+      setUsageCount(newCount);
+      localStorage.setItem(USAGE_KEY, String(newCount));
+    } catch (err: any) {
+      setError(err.message || "Failed to generate quote.");
+    } finally {
+      setLoading(false);
+    }
+  }, [transcript, jobDetails, history, usageCount]);
+
+  const startCheckout = useCallback(async () => {
+    setCheckoutLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/api/create-checkout-session`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: "monthly" }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (err: any) {
+      setError(err.message || "Checkout failed. Please try again.");
+      setCheckoutLoading(false);
+    }
+  }, []);
+
+  const loadQuoteFromHistory = useCallback((item: QuoteHistoryItem) => {
+    setQuote({
+      transcript: item.transcript,
+      quote_html: item.quote_html,
+      quote_data: item.quote_data,
+    });
+    setShowHistory(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const deleteHistoryItem = useCallback((id: string) => {
+    setHistory((prev) => {
+      const updated = prev.filter((h) => h.id !== id);
+      saveHistory(updated);
+      return updated;
+    });
+  }, []);
+
+  const toggleFollowUp = useCallback((id: string) => {
+    setHistory((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id ? { ...item, follow_up: !item.follow_up } : item
+      );
+      saveHistory(updated);
+      return updated;
+    });
+  }, []);
+
+  const markWon = useCallback((id: string) => {
+    setHistory((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id ? { ...item, won: true, follow_up: false, lost: false } : item
+      );
+      saveHistory(updated);
+      return updated;
+    });
+  }, []);
+
+  const markLost = useCallback((id: string) => {
+    setHistory((prev) => {
+      const updated = prev.map((item) =>
+        item.id === id ? { ...item, won: false, follow_up: false, lost: true } : item
+      );
+      saveHistory(updated);
+      return updated;
+    });
+  }, []);
+
+  return (
+    <section id="demo" className="py-20 md:py-32" style={{ backgroundColor: "var(--background)" }}>
+      <div className="max-w-4xl mx-auto px-4 md:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12"
+        >
+          <span className="font-mono text-xs uppercase tracking-wider mb-4 block" style={{ color: "var(--text-muted)" }}>
+            Try It
+          </span>
+          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl mb-4" style={{ color: "var(--foreground)", lineHeight: 1.1 }}>
+            Generate a quote in 30 seconds.
+          </h2>
+          <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: "var(--text-secondary)" }}>
+            Tap the mic, describe the job, and let AI handle the rest.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="border-2 p-6 md:p-8 space-y-6"
+          style={{ backgroundColor: "var(--surface)", borderColor: "var(--border)", borderRadius: "0px" }}
+        >
+          {/* Progress */}
+          {loading && <ProgressIndicator />}
+
+          {/* Voice Input */}
+          <VoiceInput
+            transcript={transcript}
+            onTranscriptChange={setTranscript}
+            isListening={isListening}
+            onListeningChange={setIsListening}
+            error={error}
+            onError={setError}
+          />
+
+          {/* Job Form Toggle */}
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="text-xs font-mono uppercase tracking-wider transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {showForm ? "Hide job details" : "Add job details (optional)"}
+          </button>
+
+          <AnimatePresence>
+            {showForm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+              >
+                <JobForm jobDetails={jobDetails} onChange={setJobDetails} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Material Calculator */}
+          <MaterialCalculator />
+
+          {/* Generate Button */}
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={generateQuote}
+            disabled={loading}
+            className="w-full h-14 font-mono text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: "var(--primary)",
+              color: "white",
+              borderRadius: "0px",
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Generating quote...
+              </>
+            ) : (
+              <>
+                <Wand2 className="w-5 h-5" />
+                {usageCount >= FREE_QUOTA ? "Upgrade to generate more" : "Generate Quote"}
+              </>
+            )}
+          </motion.button>
+
+          {/* Quote Display */}
+          <AnimatePresence>
+            {quote && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <QuoteDisplay
+                  quote={quote}
+                  onQuoteUpdate={setQuote}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* Quote History Sidebar */}
+      <QuoteHistory
+        history={history}
+        onLoad={loadQuoteFromHistory}
+        onDelete={deleteHistoryItem}
+        onToggleFollowUp={toggleFollowUp}
+        onMarkWon={markWon}
+        onMarkLost={markLost}
+        isOpen={showHistory}
+        onToggle={() => setShowHistory(!showHistory)}
+      />
+
+      {/* Paywall Modal */}
+      <AnimatePresence>
+        {showPaywall && (
+          <Paywall
+            onClose={() => setShowPaywall(false)}
+            onCheckout={startCheckout}
+            checkoutLoading={checkoutLoading}
+          />
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}
