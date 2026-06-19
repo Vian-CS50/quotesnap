@@ -18,15 +18,24 @@ export default function NewQuotePage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const [typedTranscript, setTypedTranscript] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentQuote) createDraft();
   }, [currentQuote, createDraft]);
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleTranscript = useCallback(
     async (transcript: string) => {
       if (!currentQuote) return;
       setIsProcessing(true);
+      setError(null);
       try {
         const result = await transcribeAudio(transcript);
         setDemoMode(result.demoMode ?? false);
@@ -39,9 +48,8 @@ export default function NewQuotePage() {
         updateQuote({
           lineItems: [...currentQuote.lineItems, ...mapped],
         });
-      } catch (err) {
-        console.error(err);
-        alert("Failed to transcribe audio. Please try again or enter details manually.");
+      } catch {
+        setError("Failed to transcribe audio. Please try again or enter details manually.");
       } finally {
         setIsProcessing(false);
       }
@@ -96,6 +104,14 @@ export default function NewQuotePage() {
 
       <main className="flex-grow flex flex-col max-w-4xl mx-auto w-full px-margin-mobile md:px-0 py-12">
         <VoiceRecorder onTranscriptReady={handleTranscript} isProcessing={isProcessing} />
+
+        {/* Error Toast */}
+        {error && (
+          <div className="bg-error-container border border-error text-on-error-container p-4 rounded-lg flex items-center gap-3 animate-error-shake mb-8">
+            <MaterialIcon name="error" className="text-error" size={20} />
+            <p className="font-body-sm text-body-sm">{error}</p>
+          </div>
+        )}
 
         {/* Type it out option */}
         <section className="w-full mb-12">

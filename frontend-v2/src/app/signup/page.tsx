@@ -190,7 +190,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 bg-growth-green text-on-primary font-button-text text-button-text rounded-lg hover:bg-primary-container active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full h-12 bg-growth-green text-on-primary font-button-text text-button-text rounded-lg hover:bg-primary-container active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />

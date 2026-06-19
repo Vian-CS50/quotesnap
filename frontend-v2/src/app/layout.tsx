@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/context/Providers";
+import { OfflineIndicator } from "@/components/ui/OfflineIndicator";
+import { InstallPrompt } from "@/components/ui/InstallPrompt";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,7 +64,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${jetbrainsMono.variable} antialiased bg-surface text-on-surface`}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <OfflineIndicator />
+          <InstallPrompt />
+        </Providers>
       </body>
     </html>
   );

@@ -152,7 +152,7 @@ function QuoteHistoryTable({
           <div
             key={q.id}
             onClick={() => onQuoteClick(q.id)}
-            className="p-4 hover:bg-surface-container-low transition-colors cursor-pointer active:scale-[0.99]"
+            className="p-4 hover:bg-surface-container-low transition-colors cursor-pointer active:scale-95"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -377,9 +377,11 @@ function ClientDetailPanel({
             Quote History
           </h3>
           {client.quotes.length === 0 ? (
-            <div className="bg-white border border-surface-subtle rounded-lg p-8 text-center">
-              <p className="font-body-sm text-on-surface-variant">No quotes for this client yet.</p>
-            </div>
+            <EmptyState
+              icon="request_quote"
+              title="No quotes yet"
+              description="This client doesn't have any quotes on record."
+            />
           ) : (
             <QuoteHistoryTable quotes={client.quotes} onQuoteClick={handleQuoteClick} />
           )}

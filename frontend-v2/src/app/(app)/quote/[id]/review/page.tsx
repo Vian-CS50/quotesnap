@@ -9,6 +9,8 @@ import { ProfitabilityCard } from "@/components/quote/ProfitabilityCard";
 import { LineItemTable } from "@/components/quote/LineItemTable";
 import { QuoteSummary } from "@/components/quote/QuoteSummary";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingShimmer } from "@/components/ui/LoadingShimmer";
 import { useQuote } from "@/context/QuoteContext";
 import { createQuote } from "@/lib/api";
 
@@ -26,6 +28,8 @@ export default function ReviewQuotePage() {
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [discountInput, setDiscountInput] = useState("");
+  const [templateMessage, setTemplateMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!currentQuote || currentQuote.id !== id) {
@@ -40,6 +44,20 @@ export default function ReviewQuotePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuote?.discountPercent]);
+
+  useEffect(() => {
+    if (templateMessage) {
+      const timer = setTimeout(() => setTemplateMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [templateMessage]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const canFinalize = useMemo(() => {
     if (!currentQuote) return false;
@@ -68,7 +86,7 @@ export default function ReviewQuotePage() {
     setIsSavingTemplate(true);
     setTimeout(() => {
       setIsSavingTemplate(false);
-      alert("Quote saved as template (demo).");
+      setTemplateMessage("Quote saved as template.");
     }, 1200);
   };
 
@@ -79,7 +97,7 @@ export default function ReviewQuotePage() {
     try {
       await createQuote({ ...currentQuote, status: "Sent" });
     } catch {
-      // demo mode: still show success
+      setError("Failed to send quote. Please try again.");
     }
     setIsSending(false);
     setShowSuccess(true);
@@ -99,10 +117,25 @@ export default function ReviewQuotePage() {
   };
 
   if (!currentQuote) {
+    const found = quotes.find((q) => q.id === id);
+    if (!found) {
+      return (
+        <AppShell title="Review Quote">
+          <div className="p-margin-desktop max-w-container-max-width mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+            <EmptyState
+              icon="error"
+              title="Quote not found"
+              description="The quote you're looking for doesn't exist or has been removed."
+              action={{ label: "Back to Dashboard", onClick: () => router.push("/dashboard") }}
+            />
+          </div>
+        </AppShell>
+      );
+    }
     return (
       <AppShell title="Review Quote">
-        <div className="p-margin-desktop text-center text-on-surface-variant font-body-md">
-          Loading quote...
+        <div className="p-margin-desktop max-w-container-max-width mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+          <LoadingShimmer text="Loading quote..." />
         </div>
       </AppShell>
     );
@@ -110,6 +143,20 @@ export default function ReviewQuotePage() {
 
   return (
     <AppShell title="Review Quote" footer={<Footer />}>
+      {/* Inline Messages */}
+      {templateMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[70] bg-primary-container text-on-primary-container px-6 py-3 rounded-lg shadow-lg font-body-sm flex items-center gap-2 animate-slide-in">
+          <MaterialIcon name="check_circle" size={20} />
+          {templateMessage}
+        </div>
+      )}
+      {error && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[70] bg-error-container text-on-error-container px-6 py-3 rounded-lg shadow-lg font-body-sm flex items-center gap-2 animate-error-shake">
+          <MaterialIcon name="error" size={20} />
+          {error}
+        </div>
+      )}
+
       {/* Success Overlay */}
       {showSuccess && (
         <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm flex items-center justify-center p-4">

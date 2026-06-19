@@ -42,6 +42,7 @@ export function VoiceRecorder({ onTranscriptReady, isProcessing = false }: Voice
   const [seconds, setSeconds] = useState(0);
   const [transcript, setTranscript] = useState("");
   const [supportsSpeech, setSupportsSpeech] = useState(true);
+  const [micError, setMicError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -85,10 +86,10 @@ export function VoiceRecorder({ onTranscriptReady, isProcessing = false }: Voice
       setIsRecording(true);
       setSeconds(0);
       setTranscript("");
+      setMicError(null);
       timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-    } catch (err) {
-      console.error("Mic access denied", err);
-      alert("Microphone access is required to record a voice memo.");
+    } catch {
+      setMicError("Microphone access is required to record a voice memo.");
     }
   }, []);
 
@@ -158,6 +159,14 @@ export function VoiceRecorder({ onTranscriptReady, isProcessing = false }: Voice
             : "Your browser does not support speech recognition. Type details instead."}
         </p>
       </div>
+      {micError && (
+        <div className="mt-4 bg-error-container border border-error text-on-error-container px-4 py-3 rounded-lg font-body-sm max-w-md animate-error-shake">
+          <div className="flex items-center gap-2">
+            <MaterialIcon name="error" className="text-error" size={18} />
+            {micError}
+          </div>
+        </div>
+      )}
       {isRecording && (
         <div className="h-8 flex items-center gap-1 mt-6">
           {[0.8, 1.2, 0.9, 1.5, 1.1, 0.7].map((dur, i) => (

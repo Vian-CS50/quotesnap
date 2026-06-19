@@ -491,7 +491,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSave}
                   className={cn(
-                    "w-full h-14 font-button-text rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]",
+                    "w-full h-14 font-button-text rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 active:scale-95",
                     saved
                       ? "bg-growth-green/90 text-white"
                       : "bg-growth-green text-white hover:brightness-110"

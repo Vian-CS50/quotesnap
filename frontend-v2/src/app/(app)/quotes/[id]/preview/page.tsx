@@ -6,6 +6,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Footer } from "@/components/layout/Footer";
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingShimmer } from "@/components/ui/LoadingShimmer";
 import { useQuote } from "@/context/QuoteContext";
 import { useSettings } from "@/context/SettingsContext";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -42,10 +44,25 @@ export default function QuotePreviewPage() {
   };
 
   if (!currentQuote) {
+    const found = quotes.find((q) => q.id === id);
+    if (!found) {
+      return (
+        <AppShell title="Quote Preview">
+          <div className="p-margin-desktop max-w-container-max-width mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+            <EmptyState
+              icon="error"
+              title="Quote not found"
+              description="The quote you're looking for doesn't exist or has been removed."
+              action={{ label: "Back to Dashboard", onClick: () => router.push("/dashboard") }}
+            />
+          </div>
+        </AppShell>
+      );
+    }
     return (
       <AppShell title="Quote Preview">
-        <div className="p-margin-desktop text-center text-on-surface-variant font-body-md">
-          Loading quote...
+        <div className="p-margin-desktop max-w-container-max-width mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+          <LoadingShimmer text="Loading quote..." />
         </div>
       </AppShell>
     );
