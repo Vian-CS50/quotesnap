@@ -104,25 +104,59 @@ Returns backend status.
 
 ---
 
-## Frontend Pages Already Built (don't rebuild)
+## Endpoint 4: Transcribe (Frontend v2)
 
-These pages exist in the Next.js app. Kimi should **style and improve** them, not recreate the logic:
+**POST** `/api/transcribe`
 
-- `/` — Main landing page + demo + pricing
-- `/checkout-success` — Post-payment thank you page
-- `/checkout-cancel` — Cancelled checkout page
+Parses a landscaper's voice transcript into structured line items. Public endpoint used by `frontend-v2`.
 
-## What Kimi Should Build
+### Request Body
+```json
+{
+  "transcript": "20x15 paver patio. 400 sq ft Bristol Stone steel blue, 4 cubic yards mulch, 2 hours brush clearing."
+}
+```
 
-Kimi's job is **visual design and frontend styling only**:
-- Redesign the landing page (`/`) with better UI/UX
-- Style the demo section (voice recorder + quote preview)
-- Style the pricing cards
-- Add animations, scroll effects, responsive design
-- Keep the existing API calls working
+### Response Body
+```json
+{
+  "transcript": "20x15 paver patio...",
+  "line_items": [
+    {
+      "description": "Bristol Stone Pavers (Steel Blue)",
+      "category": "MATERIAL",
+      "quantity": 400,
+      "unit": "Sq Ft",
+      "unit_price": 4.50,
+      "total": 1800.0,
+      "confidence": "high"
+    }
+  ],
+  "demo_mode": true
+}
+```
 
-**Do NOT change:**
-- The API endpoint URLs
-- The request/response JSON structures
-- The checkout flow logic
-- The voice recording logic (Web Speech API)
+---
+
+## Endpoint 5: Materials Catalogue (Frontend v2)
+
+**GET** `/api/materials`
+
+Returns the landscaping materials inventory with unit costs, markup, sell price, and stock status.
+
+---
+
+## Endpoint 6: Save / Retrieve Quote (Frontend v2)
+
+**POST** `/api/quotes` — Save a quote  
+**GET** `/api/quotes/{id}` — Retrieve a saved quote  
+**POST** `/api/quotes/{id}/pdf` — Generate PDF-ready HTML
+
+These endpoints support the `frontend-v2` quote review and PDF preview flow.
+
+---
+
+## Frontend Apps
+
+- `frontend/` — Original landing page + checkout pages (dark theme, emerald primary).
+- `frontend-v2/` — New functional app built from the Field Logic redesign (light theme, dashboard, quote flow, materials, settings, PDF preview). Run with `npm run dev` from that folder.

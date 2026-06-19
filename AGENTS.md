@@ -29,11 +29,19 @@ npm run dev
 - **Test Card:** 4242 4242 4242 4242, any future date, any CVC.
 
 ## File Map
-- `backend/main.py` — FastAPI app, AI prompt, invoice HTML template
+- `backend/main.py` — FastAPI app, AI prompt, invoice HTML template, plus `/api/transcribe`, `/api/materials`, `/api/quotes` endpoints for the v2 app
 - `backend/.env` — API keys (Moonshot, Stripe, Stability)
-- `frontend/src/app/` — Next.js pages
+- `frontend/src/app/` — Original Next.js landing pages
 - `frontend/src/components/sections/` — Landing page sections
+- `frontend-v2/` — New functional app built from the Field Logic / minimalist UI redesign (dashboard, quote flow, materials, settings, PDF preview)
 - `HANDOFF.md` — Session-to-session status
+
+## New Frontend v2
+A separate Next.js app exists at `frontend-v2/` with the full quote creation workflow:
+- `npm run dev` from `frontend-v2/` starts it on `localhost:3000`
+- Tailwind config uses the "Field Logic" design system (light theme, Growth Green `#1B4D3E`, Surface Base `#F5F1EB`)
+- Pages: `/dashboard`, `/quote/new`, `/quote/[id]/review`, `/materials`, `/settings`, `/quotes/[id]/preview`, `/clients`
+- State persists to `localStorage`; backend endpoints are used when available and fall back gracefully when offline
 
 ## Stripe Features to Leverage (May 2025)
 1. **Optimized Checkout Suite** — ML personalizes checkout in real-time. Shows right payment methods per customer. Zero code required.

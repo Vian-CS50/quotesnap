@@ -2289,6 +2289,177 @@ async def limit_request_size(request: Request, call_next):
 
 
 # ---------------------------------------------------------------------------
+# Frontend App API (lightweight, no-auth endpoints for the v2 React app)
+# ---------------------------------------------------------------------------
+
+MATERIALS_CATALOGUE = [
+    {"id": "m1", "name": "Premium Bermuda Turf", "unit": "Sq Ft", "unitCost": 0.65, "markupPercent": 40, "sellPrice": 0.91, "status": "In-Stock", "category": "Turf"},
+    {"id": "m2", "name": "Dark Cedar Mulch", "unit": "Cubic Yard", "unitCost": 28.0, "markupPercent": 35, "sellPrice": 37.80, "status": "In-Stock", "category": "Mulch"},
+    {"id": "m3", "name": "Concrete Pavers (Grey)", "unit": "Pallet", "unitCost": 420.0, "markupPercent": 25, "sellPrice": 525.0, "status": "Low Stock", "category": "Hardscape"},
+    {"id": "m4", "name": "Topsoil Mix", "unit": "Ton", "unitCost": 18.5, "markupPercent": 50, "sellPrice": 27.75, "status": "In-Stock", "category": "Soil"},
+    {"id": "m5", "name": "Bristol Stone Pavers (Steel Blue)", "unit": "Sq Ft", "unitCost": 3.21, "markupPercent": 40, "sellPrice": 4.50, "status": "In-Stock", "category": "Hardscape"},
+    {"id": "m6", "name": "Black Hardwood Mulch", "unit": "Cubic Yard", "unitCost": 33.33, "markupPercent": 35, "sellPrice": 45.0, "status": "In-Stock", "category": "Mulch"},
+    {"id": "m7", "name": "Base Stone (Crushed)", "unit": "Ton", "unitCost": 22.86, "markupPercent": 40, "sellPrice": 32.0, "status": "In-Stock", "category": "Stone"},
+    {"id": "m8", "name": "Retaining Wall Blocks", "unit": "Unit", "unitCost": 18.12, "markupPercent": 25, "sellPrice": 22.65, "status": "Low Stock", "category": "Hardscape"},
+]
+
+_in_memory_quotes: dict[str, dict] = {}
+
+class TranscribeRequest(BaseModel):
+    transcript: str = Field(default="", max_length=5000)
+
+class TranscribeResponse(BaseModel):
+    transcript: str
+    line_items: list[dict]
+    demo_mode: bool = True
+
+class QuoteSaveRequest(BaseModel):
+    id: str
+    quoteNumber: str = ""
+    clientName: str = ""
+    lineItems: list[dict] = Field(default_factory=list)
+    subtotal: float = 0.0
+    discountPercent: float = 0.0
+    discountAmount: float = 0.0
+    taxRate: float = 10.0
+    taxAmount: float = 0.0
+    total: float = 0.0
+    laborCost: float = 0.0
+    materialCost: float = 0.0
+    projectedProfit: float = 0.0
+    marginPercent: float = 0.0
+    status: str = "Draft"
+    dateIssued: str = ""
+    expiryDate: str = ""
+
+
+def _extract_line_items_from_transcript(transcript: str) -> list[dict]:
+    """Simple rule-based extraction for the frontend v2 transcribe endpoint."""
+    transcript_lower = transcript.lower()
+    items = []
+
+    # Paver patio example
+    if "paver" in transcript_lower or "patio" in transcript_lower:
+        # Try to extract sq ft
+        import re
+        sqft_match = re.search(r'(\d+)\s*(sq\s*ft|square\s*feet|sqm|m2)', transcript_lower)
+        sqft = int(sqft_match.group(1)) if sqft_match else 400
+        items.append({"description": "Bristol Stone Pavers (Steel Blue)", "category": "MATERIAL", "quantity": sqft, "unit": "Sq Ft", "unitPrice": 4.50, "total": round(sqft * 4.50, 2), "confidence": "high"})
+
+    if "mulch" in transcript_lower:
+        import re
+        cy_match = re.search(r'(\d+)\s*(cubic\s*yards?|yards?|yd)', transcript_lower)
+        cy = int(cy_match.group(1)) if cy_match else 4
+        items.append({"description": "Dark Cedar Mulch", "category": "MATERIAL", "quantity": cy, "unit": "Cubic Yard", "unitPrice": 45.00, "total": round(cy * 45.00, 2), "confidence": "high"})
+
+    if "brush" in transcript_lower or "clearing" in transcript_lower or "grading" in transcript_lower:
+        import re
+        hr_match = re.search(r'(\d+)\s*(hours?|hrs?)', transcript_lower)
+        hrs = int(hr_match.group(1)) if hr_match else 2
+        items.append({"description": "Brush Clearing (Site Prep)", "category": "LABOR", "quantity": hrs, "unit": "Hours", "unitPrice": 65.00, "total": round(hrs * 65.00, 2), "confidence": "medium"})
+
+    if not items:
+        items.append({"description": "General Landscaping Works", "category": "LABOR", "quantity": 1, "unit": "Job", "unitPrice": 850.00, "total": 850.00, "confidence": "low"})
+
+    return items
+
+
+@app.get("/api/materials")
+@limiter.limit(RATE_LIMITS["health"])
+def get_materials(request: Request):
+    """Return the landscaping materials catalogue."""
+    return MATERIALS_CATALOGUE
+
+
+@app.post("/api/transcribe", response_model=TranscribeResponse)
+@limiter.limit(RATE_LIMITS["generate_quote"])
+async def transcribe_endpoint(
+    request: Request,
+    transcript: str = "",
+):
+    """
+    Accept a transcript (multipart form or query) and return parsed line items.
+    This is a lightweight public endpoint for the v2 React app.
+    """
+    client_ip = request.client.host if request.client else "unknown"
+
+    # Support both form-data and JSON body
+    if not transcript:
+        try:
+            body = await request.json()
+            transcript = body.get("transcript", "")
+        except Exception:
+            form = await request.form()
+            transcript = form.get("transcript", "") or ""
+
+    transcript = sanitize_string(transcript, max_length=5000)
+    if not transcript:
+        log_security_event("INVALID_TRANSCRIPT", "Empty transcript in /api/transcribe", client_ip)
+        raise HTTPException(400, "Transcript is required.")
+
+    line_items = _extract_line_items_from_transcript(transcript)
+    return TranscribeResponse(transcript=transcript, line_items=line_items, demo_mode=True)
+
+
+@app.post("/api/quotes")
+@limiter.limit(RATE_LIMITS["render_quote"])
+async def save_quote(req: QuoteSaveRequest, request: Request):
+    """Save a quote to in-memory store."""
+    data = req.dict()
+    _in_memory_quotes[data["id"]] = data
+    return data
+
+
+@app.get("/api/quotes/{quote_id}")
+@limiter.limit(RATE_LIMITS["health"])
+def get_quote(quote_id: str, request: Request):
+    """Retrieve a saved quote."""
+    if quote_id not in _in_memory_quotes:
+        raise HTTPException(404, "Quote not found")
+    return _in_memory_quotes[quote_id]
+
+
+@app.post("/api/quotes/{quote_id}/pdf")
+@limiter.limit(RATE_LIMITS["render_quote"])
+async def generate_quote_pdf(quote_id: str, request: Request):
+    """Render a saved quote as PDF-ready HTML."""
+    if quote_id not in _in_memory_quotes:
+        raise HTTPException(404, "Quote not found")
+
+    data = _in_memory_quotes[quote_id]
+    # Convert to the legacy shape expected by the template
+    template_data = {
+        "quote_number": data.get("quoteNumber", "QS-0000"),
+        "date": data.get("dateIssued", ""),
+        "valid_until": data.get("expiryDate", ""),
+        "business_name": "QuoteSnap Pro Services",
+        "client_name": data.get("clientName", ""),
+        "job_address": "",
+        "line_items": [
+            {
+                "description": i.get("description", ""),
+                "quantity": i.get("quantity", 0),
+                "unit": i.get("unit", "item"),
+                "unit_price": i.get("unitPrice", 0),
+                "total": i.get("total", 0),
+            }
+            for i in data.get("lineItems", [])
+        ],
+        "subtotal": data.get("subtotal", 0),
+        "gst": data.get("taxAmount", 0),
+        "total": data.get("total", 0),
+        "notes": "",
+        "terms": "",
+        "abn": "",
+    }
+
+    jinja_env = Environment(autoescape=select_autoescape(['html', 'xml']))
+    template = jinja_env.from_string(QUOTE_HTML_TEMPLATE)
+    html = template.render(**template_data)
+    return {"quote_html": html, "quote_data": template_data}
+
+
+# ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
 
