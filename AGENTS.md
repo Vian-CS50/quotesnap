@@ -34,7 +34,7 @@ npm run dev
 - `frontend/src/app/` — Original Next.js landing pages
 - `frontend/src/components/sections/` — Landing page sections
 - `frontend-v2/` — New functional app built from the Field Logic / minimalist UI redesign (dashboard, quote flow, materials, settings, PDF preview)
-- `HANDOFF.md` — Session-to-session status
+- `quotesnapdraftHANDOFF.md` — Session-to-session status
 
 ## New Frontend v2
 A separate Next.js app exists at `frontend-v2/` with the full quote creation workflow:
