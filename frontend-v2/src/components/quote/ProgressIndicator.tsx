@@ -3,7 +3,7 @@
 import { MaterialIcon } from "@/components/ui/MaterialIcon";
 import { cn } from "@/lib/utils";
 
-const steps = ["DRAFT", "REVIEW", "ADJUST", "EXPORT"] as const;
+const steps = ["Draft", "Review", "Finalize"] as const;
 
 export function ProgressIndicator({ currentStep }: { currentStep: number }) {
   return (

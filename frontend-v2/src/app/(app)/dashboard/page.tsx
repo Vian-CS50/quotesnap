@@ -66,7 +66,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Summary Stats */}
-          <div className="col-span-12 lg:col-span-4 grid grid-cols-1 gap-4">
+          <div className="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-4">
             <StatCard label="Active Pipeline" value={formatCurrency(totalPipeline)} icon="payments" color="text-utility-gold" bg="bg-secondary-fixed" />
             <StatCard label="Conversion Rate" value={`${conversionRate}%`} icon="trending_up" color="text-growth-green" bg="bg-primary-fixed" />
             <StatCard label="Total Quotes" value={String(quotes.length)} icon="request_quote" color="text-on-surface" bg="bg-surface-container-high" />
@@ -96,7 +96,7 @@ export default function DashboardPage() {
                   <Link
                     key={quote.id}
                     href={`/quotes/${quote.id}/preview`}
-                    className="bg-white border border-surface-subtle hover:border-growth-green/30 transition-colors p-4 flex items-center justify-between group"
+                    className="bg-white border border-surface-subtle hover:border-growth-green/30 transition-colors p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-surface-container-low rounded-lg flex items-center justify-center">
@@ -109,7 +109,7 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-4 sm:gap-8">
                       <div className="text-right">
                         <p className="font-body-md font-bold text-growth-green">{formatCurrency(quote.total)}</p>
                         <p className="font-label-mono text-label-mono text-on-surface-variant">

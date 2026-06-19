@@ -25,7 +25,7 @@ export function QuoteSummary({ quote }: QuoteSummaryProps) {
         <span>{formatCurrency(quote.taxAmount)}</span>
       </div>
       <div className="flex justify-between w-full max-w-xs mt-2 pt-2 border-t border-outline-variant">
-        <span className="font-headline-sm font-bold">Total Quote</span>
+        <span className="font-headline-sm font-bold">Total</span>
         <span className="font-headline-sm font-bold text-growth-green">{formatCurrency(quote.total)}</span>
       </div>
     </div>

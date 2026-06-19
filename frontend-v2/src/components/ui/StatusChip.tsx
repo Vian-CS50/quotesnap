@@ -16,14 +16,14 @@ export function StatusChip({ status, className }: StatusChipProps) {
       ? "bg-secondary-fixed text-on-secondary-fixed"
       : lower === "draft"
       ? "bg-surface-container-highest text-on-surface-variant"
-      : lower === "low stock"
+      : lower === "lost" || lower === "low stock"
       ? "bg-error-container text-on-error-container"
       : "bg-surface-container text-on-surface-variant";
 
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium font-label-mono tracking-wide",
+        "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold font-label-mono uppercase tracking-wide",
         colorClass,
         className
       )}

@@ -72,6 +72,18 @@ export interface BrandColors {
   text: string;
 }
 
+export interface LabourRates {
+  defaultHourlyRate: number;
+  crewRate: number;
+  minimumCharge: number;
+}
+
+export interface TaxSettings {
+  gstRate: number;
+  taxNumber: string;
+  isRegistered: boolean;
+}
+
 export interface QuoteDefaults {
   defaultExpiryDays: number;
   taxRate: number;
@@ -83,6 +95,8 @@ export interface QuoteDefaults {
 export interface AppSettings {
   businessProfile: BusinessProfile;
   brandColors: BrandColors;
+  labourRates: LabourRates;
+  taxSettings: TaxSettings;
   quoteDefaults: QuoteDefaults;
 }
 
@@ -106,6 +120,37 @@ export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
 }
+
+export interface ContactLog {
+  type: "phone" | "email" | "note";
+  date: string;
+  title: string;
+  description: string;
+}
+
+export interface SiteLocation {
+  name: string;
+  address: string;
+}
+
+export type ClientStatus = "Active" | "Lead" | "Past";
+
+export interface ClientRecord {
+  id: string;
+  name: string;
+  clientId: string;
+  contactName: string;
+  contactTitle: string;
+  contactPhone: string;
+  contactEmail: string;
+  status: ClientStatus;
+  totalValue: number;
+  siteLocations: SiteLocation[];
+  quotes: Quote[];
+  contactLogs: ContactLog[];
+  isPremium: boolean;
+}
+
 
 export interface LoginCredentials {
   email: string;

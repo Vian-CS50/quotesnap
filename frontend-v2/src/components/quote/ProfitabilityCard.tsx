@@ -13,7 +13,7 @@ export function ProfitabilityCard({ quote }: ProfitabilityCardProps) {
   const marginWidth = `${Math.min(Math.max(margin, 0), 100)}%`;
 
   return (
-    <section className="bg-growth-green text-white p-6 rounded-xl shadow-lg relative overflow-hidden">
+    <section className="bg-growth-green text-on-primary p-6 rounded-lg shadow-sm relative overflow-hidden">
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
       </div>

@@ -17,6 +17,16 @@ const DEFAULT_SETTINGS: AppSettings = {
     accent: "#D49D26",
     text: "#1A1A1A",
   },
+  labourRates: {
+    defaultHourlyRate: 65,
+    crewRate: 45,
+    minimumCharge: 250,
+  },
+  taxSettings: {
+    gstRate: 10,
+    taxNumber: "",
+    isRegistered: true,
+  },
   quoteDefaults: {
     defaultExpiryDays: 30,
     taxRate: 10,
@@ -33,6 +43,8 @@ interface SettingsContextType {
   updateSettings: (patch: Partial<AppSettings>) => void;
   updateBusinessProfile: (patch: Partial<AppSettings["businessProfile"]>) => void;
   updateBrandColors: (patch: Partial<AppSettings["brandColors"]>) => void;
+  updateLabourRates: (patch: Partial<AppSettings["labourRates"]>) => void;
+  updateTaxSettings: (patch: Partial<AppSettings["taxSettings"]>) => void;
   updateQuoteDefaults: (patch: Partial<AppSettings["quoteDefaults"]>) => void;
 }
 
@@ -63,6 +75,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const updateBrandColors = (patch: Partial<AppSettings["brandColors"]>) =>
     setSettings((s) => ({ ...s, brandColors: { ...s.brandColors, ...patch } }));
 
+  const updateLabourRates = (patch: Partial<AppSettings["labourRates"]>) =>
+    setSettings((s) => ({ ...s, labourRates: { ...s.labourRates, ...patch } }));
+
+  const updateTaxSettings = (patch: Partial<AppSettings["taxSettings"]>) =>
+    setSettings((s) => ({ ...s, taxSettings: { ...s.taxSettings, ...patch } }));
+
   const updateQuoteDefaults = (patch: Partial<AppSettings["quoteDefaults"]>) =>
     setSettings((s) => ({ ...s, quoteDefaults: { ...s.quoteDefaults, ...patch } }));
 
@@ -73,6 +91,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         updateSettings,
         updateBusinessProfile,
         updateBrandColors,
+        updateLabourRates,
+        updateTaxSettings,
         updateQuoteDefaults,
       }}
     >

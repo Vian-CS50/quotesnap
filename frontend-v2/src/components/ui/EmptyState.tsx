@@ -11,7 +11,7 @@ interface EmptyStateProps {
 
 export function EmptyState({ icon = "request_quote", title, description, action }: EmptyStateProps) {
   return (
-    <div className="bg-surface-container-lowest border border-surface-subtle p-12 flex flex-col items-center text-center">
+    <div className="bg-surface-container-lowest border border-surface-subtle p-12 flex flex-col items-center text-center rounded-xl">
       <div className="w-16 h-16 rounded-full bg-surface-base flex items-center justify-center mb-6">
         <MaterialIcon name={icon} className="text-growth-green scale-150" size={32} />
       </div>
@@ -20,7 +20,7 @@ export function EmptyState({ icon = "request_quote", title, description, action 
       {action && (
         <button
           onClick={action.onClick}
-          className="bg-growth-green text-white font-button-text text-button-text h-12 px-6 rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2"
+          className="bg-growth-green text-white font-button-text text-button-text h-12 px-6 rounded-lg hover:bg-opacity-90 transition-all flex items-center gap-2 active:scale-95"
         >
           <MaterialIcon name="add" size={20} />
           {action.label}

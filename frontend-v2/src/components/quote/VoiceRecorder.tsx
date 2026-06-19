@@ -118,33 +118,33 @@ export function VoiceRecorder({ onTranscriptReady, isProcessing = false }: Voice
       <button
         onClick={toggle}
         disabled={isProcessing}
-        className="relative group cursor-pointer disabled:opacity-60"
+        className="relative cursor-pointer disabled:opacity-60 active:scale-95 transition-transform duration-150 p-0"
         aria-label={isRecording ? "Stop recording" : "Start recording"}
       >
         <div
           className={cn(
-            "w-48 h-48 md:w-64 md:h-64 rounded-full border-2 border-growth-green flex items-center justify-center relative z-10 bg-surface transition-all duration-500 group-hover:scale-105",
+            "w-48 h-48 md:w-64 md:h-64 rounded-full border-2 border-growth-green flex items-center justify-center relative bg-surface transition-all duration-500 hover:scale-105",
             isRecording && "bg-growth-green"
           )}
         >
           <MaterialIcon
             name="mic"
             className={cn(
-              "text-6xl md:text-8xl transition-colors duration-300",
+              "z-10 text-6xl md:text-8xl transition-colors duration-300",
               isRecording ? "text-on-primary" : "text-growth-green"
             )}
             size={80}
           />
+          {isRecording && (
+            <>
+              <div className="absolute inset-0 rounded-full border border-growth-green opacity-30 animate-recording-pulse" />
+              <div
+                className="absolute inset-0 rounded-full border border-growth-green opacity-10 animate-recording-pulse"
+                style={{ animationDelay: "0.5s" }}
+              />
+            </>
+          )}
         </div>
-        {isRecording && (
-          <>
-            <div className="absolute inset-0 rounded-full border border-growth-green opacity-30 animate-recording-pulse" />
-            <div
-              className="absolute inset-0 rounded-full border border-growth-green opacity-10 animate-recording-pulse"
-              style={{ animationDelay: "0.5s" }}
-            />
-          </>
-        )}
       </button>
       <div className="mt-8">
         <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">

@@ -86,7 +86,7 @@ export default function NewQuotePage() {
             </span>
             <button
               onClick={handleSaveDraft}
-              className="bg-growth-green text-on-primary font-button-text text-button-text px-6 py-2 rounded transition-all hover:opacity-90 active:scale-95"
+              className="bg-growth-green text-on-primary font-button-text text-button-text px-6 py-2 rounded-lg transition-all hover:opacity-90 active:scale-95"
             >
               Save Draft
             </button>
@@ -123,7 +123,7 @@ export default function NewQuotePage() {
                   setTypedTranscript("");
                 }}
                 disabled={!typedTranscript.trim() || isProcessing}
-                className="bg-growth-green text-white font-button-text text-button-text px-6 py-3 rounded-lg flex items-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
+                className="bg-growth-green text-white font-button-text text-button-text px-6 py-3 rounded-lg flex items-center gap-2 hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
               >
                 <MaterialIcon name="auto_awesome" size={18} />
                 Draft from Text
@@ -150,7 +150,7 @@ export default function NewQuotePage() {
           <button
             onClick={handleReview}
             disabled={!currentQuote || currentQuote.lineItems.length === 0}
-            className="bg-slate-deep text-white font-button-text text-button-text h-12 px-10 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-all disabled:opacity-50"
+            className="bg-slate-deep text-white font-button-text text-button-text h-12 px-10 rounded-lg flex items-center justify-center gap-2 hover:bg-black transition-all active:scale-95 disabled:opacity-50"
           >
             Review & Finalize
             <MaterialIcon name="arrow_forward" size={20} />

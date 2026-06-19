@@ -34,11 +34,9 @@ export function DraftingPreview({ materials, labor, total, isProcessing = false 
           <MaterialIcon name="auto_awesome" className="text-growth-green" filled size={24} />
           <h2 className="font-headline-sm text-headline-sm">AI Drafting Preview</h2>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full">
+        <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-mono text-[10px] uppercase">
           <div className={cn("w-2 h-2 rounded-full", isProcessing ? "bg-growth-green animate-recording-pulse" : "bg-growth-green")} />
-          <span className="font-label-mono text-label-mono text-on-surface-variant uppercase">
-            {isProcessing ? "Processing..." : "Draft Ready"}
-          </span>
+          <span>{isProcessing ? "Listening..." : "Draft Ready"}</span>
         </div>
       </div>
 
