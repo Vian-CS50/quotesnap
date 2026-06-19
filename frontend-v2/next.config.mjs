@@ -6,11 +6,22 @@ const nextConfig = {
       { protocol: "http", hostname: "**" },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Link', value: '</manifest.json>; rel=manifest' },
+          { key: 'X-Theme-Color', value: '#1B4D3E' },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "http://127.0.0.1:8341/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8341'}/api/:path*`,
       },
     ];
   },

@@ -91,3 +91,30 @@ export interface TranscriptionResult {
   lineItems: LineItem[];
   demoMode?: boolean;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  businessName?: string;
+  subscription?: 'pro' | 'elite' | 'trial';
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignupData {
+  email: string;
+  password: string;
+  name: string;
+  businessName: string;
+}

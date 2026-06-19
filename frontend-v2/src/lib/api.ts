@@ -1,17 +1,79 @@
 import type { LineItem, Material, Quote, TranscriptionResult } from "@/types";
+import type { LoginCredentials, SignupData } from "@/types";
+import { getToken } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8341";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
-    headers: { "Content-Type": "application/json" },
+    headers,
     ...options,
   });
+
   if (!res.ok) {
     const text = await res.text().catch(() => "Unknown error");
     throw new Error(`API error ${res.status}: ${text}`);
   }
   return res.json() as Promise<T>;
+}
+
+// --- Auth fetch helper (explicit token injection) ---
+export async function authFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  const res = await fetch(url, { headers, ...options });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "Unknown error");
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+// --- Auth endpoints ---
+export async function login(credentials: LoginCredentials): Promise<{ token: string }> {
+  return fetchJson<{ token: string }>(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    body: JSON.stringify(credentials),
+  });
+}
+
+export async function signup(data: SignupData): Promise<{ token: string }> {
+  return fetchJson<{ token: string }>(`${API_BASE}/api/auth/signup`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function forgotPassword(email: string): Promise<{ success: boolean }> {
+  return fetchJson<{ success: boolean }>(`${API_BASE}/api/auth/forgot-password`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, password: string): Promise<{ success: boolean }> {
+  return fetchJson<{ success: boolean }>(`${API_BASE}/api/auth/reset-password`, {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}
+
+export async function getMe(): Promise<{ user: { id: string; email: string; name: string } }> {
+  return fetchJson<{ user: { id: string; email: string; name: string } }>(`${API_BASE}/api/auth/me`);
 }
 
 // --- Mock materials catalogue (fallback when /api/materials is unavailable) ---
@@ -30,20 +92,17 @@ export async function getMaterials(): Promise<Material[]> {
   try {
     return await fetchJson<Material[]>(`${API_BASE}/api/materials`);
   } catch {
-    // Fallback mock data so the UI is always functional
     return MOCK_MATERIALS;
   }
 }
 
 export async function transcribeAudio(transcript: string): Promise<TranscriptionResult> {
-  // Send transcript to backend parser
   try {
     return await fetchJson<TranscriptionResult>(`${API_BASE}/api/transcribe`, {
       method: "POST",
       body: JSON.stringify({ transcript }),
     });
   } catch {
-    // Fallback: parse locally for offline/demo use
     return parseTranscriptLocally(transcript);
   }
 }
@@ -120,7 +179,6 @@ export async function createQuote(quote: Quote): Promise<Quote> {
       body: JSON.stringify(quote),
     });
   } catch {
-    // Client-side persistence fallback
     return quote;
   }
 }

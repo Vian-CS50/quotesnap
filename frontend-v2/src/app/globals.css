@@ -65,3 +65,34 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Touch ripple effect */
+.touch-ripple { position: relative; overflow: hidden; }
+.touch-ripple::after {
+  content: "";
+  position: absolute;
+  width: 100%; height: 100%; top: 0; left: 0;
+  background: radial-gradient(circle, rgba(27, 77, 62, 0.1) 10%, transparent 10.01%);
+  background-repeat: no-repeat; background-position: 50%;
+  transform: scale(10, 10); opacity: 0;
+  transition: transform 0.5s, opacity 0.5s;
+}
+.touch-ripple:active::after { transform: scale(0, 0); opacity: 0.3; transition: 0s; }
+
+/* Input focus micro-interaction */
+input:focus, textarea:focus, select:focus {
+  transition: transform 0.15s ease-out, border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+  transform: scale(1.005);
+}
+
+/* Mobile bottom safe area */
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
