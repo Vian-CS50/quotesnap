@@ -10,7 +10,6 @@ slowapi
 email-validator
 bcrypt
 python-jose[cryptography]
-passlib
 pyotp
 sqlalchemy
 aiosqlite

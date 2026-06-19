@@ -15,7 +15,7 @@ import pyotp
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel, EmailStr, Field, validator
 from sqlalchemy import (
     create_engine,
@@ -50,17 +50,17 @@ DB_PATH = os.getenv("AUTH_DB_PATH", os.path.join(os.path.dirname(__file__), "quo
 ASYNC_DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
 
 # ---------------------------------------------------------------------------
-# Password hashing
+# Password hashing (use bcrypt directly; avoids passlib / bcrypt 4.x bug)
 # ---------------------------------------------------------------------------
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+BCRYPT_ROUNDS = 12
 
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=BCRYPT_ROUNDS)).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 # ---------------------------------------------------------------------------

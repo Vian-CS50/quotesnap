@@ -200,7 +200,15 @@ async def startup_event():
 # CORS — Restrictive in production, permissive in development
 # =============================================================================
 if IS_PRODUCTION:
-    allowed_origins = [DOMAIN]
+    # Always allow the configured DOMAIN plus the current Vercel frontend.
+    # Additional origins can be supplied as a comma-separated ALLOWED_ORIGINS env var.
+    _default_production_origins = [DOMAIN, "https://quotesnap-blue.vercel.app"]
+    _extra_origins = [
+        origin.strip()
+        for origin in os.getenv("ALLOWED_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+    allowed_origins = list(dict.fromkeys(_default_production_origins + _extra_origins))
     allowed_methods = ["GET", "POST"]
     allowed_headers = ["Content-Type", "Authorization", "X-API-Key"]
 else:

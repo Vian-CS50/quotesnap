@@ -1,4 +1,4 @@
-import type { LineItem, Material, Quote, TranscriptionResult } from "@/types";
+import type { LineItem, Material, Quote, TranscriptionResult, User } from "@/types";
 import type { LoginCredentials, SignupData } from "@/types";
 import { getToken } from "@/lib/auth";
 
@@ -44,18 +44,50 @@ export async function authFetch<T>(url: string, options?: RequestInit): Promise<
 }
 
 // --- Auth endpoints ---
-export async function login(credentials: LoginCredentials): Promise<{ token: string }> {
-  return fetchJson<{ token: string }>(`${API_BASE}/api/auth/login`, {
+interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+}
+
+interface BackendProfile {
+  id: number;
+  email: string;
+  full_name: string | null;
+  business_name: string | null;
+  subscription_tier: string;
+}
+
+function mapProfileToUser(profile: BackendProfile): User {
+  return {
+    id: String(profile.id),
+    email: profile.email,
+    name: profile.full_name || "",
+    businessName: profile.business_name || undefined,
+    subscription: profile.subscription_tier as User["subscription"],
+  };
+}
+
+export async function login(credentials: LoginCredentials): Promise<{ token: string; refreshToken: string }> {
+  const data = await fetchJson<TokenResponse>(`${API_BASE}/api/auth/login`, {
     method: "POST",
     body: JSON.stringify(credentials),
   });
+  return { token: data.access_token, refreshToken: data.refresh_token };
 }
 
-export async function signup(data: SignupData): Promise<{ token: string }> {
-  return fetchJson<{ token: string }>(`${API_BASE}/api/auth/signup`, {
+export async function signup(data: SignupData): Promise<{ token: string; refreshToken: string }> {
+  const payload = {
+    email: data.email,
+    password: data.password,
+    full_name: data.name,
+    business_name: data.businessName,
+    age_confirmation: true,
+  };
+  const res = await fetchJson<TokenResponse>(`${API_BASE}/api/auth/signup`, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
+  return { token: res.access_token, refreshToken: res.refresh_token };
 }
 
 export async function forgotPassword(email: string): Promise<{ success: boolean }> {
@@ -72,8 +104,9 @@ export async function resetPassword(token: string, password: string): Promise<{ 
   });
 }
 
-export async function getMe(): Promise<{ user: { id: string; email: string; name: string } }> {
-  return fetchJson<{ user: { id: string; email: string; name: string } }>(`${API_BASE}/api/auth/me`);
+export async function getMe(): Promise<User> {
+  const profile = await fetchJson<BackendProfile>(`${API_BASE}/api/auth/me`);
+  return mapProfileToUser(profile);
 }
 
 // --- Mock materials catalogue (fallback when /api/materials is unavailable) ---

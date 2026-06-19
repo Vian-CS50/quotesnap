@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedToken && isTokenValid(storedToken)) {
         setTokenState(storedToken);
         const me = await getMe();
-        setUser(me.user);
+        setUser(me);
       } else {
         removeToken();
         setTokenState(null);
@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(res.token);
         setTokenState(res.token);
         const me = await getMe();
-        setUser(me.user);
+        setUser(me);
         router.push("/dashboard");
       } finally {
         setIsLoading(false);
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(res.token);
         setTokenState(res.token);
         const me = await getMe();
-        setUser(me.user);
+        setUser(me);
         router.push("/dashboard");
       } finally {
         setIsLoading(false);
