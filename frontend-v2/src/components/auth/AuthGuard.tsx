@@ -17,6 +17,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [isLoading, isAuthenticated, pathname, router]);
 
+  // Public pages (login/signup) should stay mounted so form state isn't wiped
+  // when the global auth loading state toggles during signup/login.
+  if (PUBLIC_ROUTES.includes(pathname)) {
+    return <>{children}</>;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface">
